@@ -4,10 +4,10 @@ coop = cooptype()
 
 
 ------------------------------------------
---      FFR CO-OP MODE VERSION 0.08     --
+--      FFR CO-OP MODE VERSION 0.09     --
 --          MANUAL CONFIGURATION        --
 ------------------------------------------
-SCRIPT_VERSION = "0.08"
+SCRIPT_VERSION = "0.09"
 SERVER_IP = "142.166.18.108"
 DEBUG = true
 LOCAL = false
@@ -46,6 +46,7 @@ if u8(0x37761) == 0x1C then
 end
 mem_domain["systembus"]()
 coop:ReportScriptVersion(SCRIPT_VERSION)
+coop:ReportRomName(gameinfo.getromname())
 
 if not (LOCAL == true) then
 	coop:SetServer(SERVER_IP)

@@ -2,7 +2,7 @@ local M = {}
 
 M.ep_version = function()
     local cjson = require "cjson.safe"
-    ngx.print(cjson.encode({"0.08;0.07b"}))
+    ngx.print(cjson.encode({"0.09;0.09"}))
 end
 
 M.ep_init = function()

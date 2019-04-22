@@ -1,4 +1,4 @@
-FFR Coop Mode v0.08
+FFR Coop Mode v0.09
 
 Setup consists of two files:
     LibFFRNetwork.dll
@@ -27,6 +27,9 @@ Red = Error.
 Yellow = Yielding. This means the script is backing off to prevent lag.
 
 --==<[CHANGE LOG]>==--
+0.09:
+	- Added unreasonable amounts of logging.  Logs are created in the
+	subfolder '/logs' where the LibFFRNetwork.dll is located.
 0.08:
 	- Fixed uncaught exception.
 	- 10% friendlier.
