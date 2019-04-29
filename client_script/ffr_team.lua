@@ -44,13 +44,14 @@ if u8(0x37761) == 0x1C then
 	shardhuntmode = true;
 	console.log("Detected shard hunt rom");
 end
-mem_domain["systembus"]()
-coop:ReportScriptVersion(SCRIPT_VERSION)
-coop:ReportRomName(gameinfo.getromname())
 
 if not (LOCAL == true) then
 	coop:SetServer(SERVER_IP)
 end
+
+mem_domain["systembus"]()
+coop:ReportScriptVersion(SCRIPT_VERSION)
+coop:ReportRomName(gameinfo.getromname())
 
 function debug_log(s)
 	if DEBUG == true then

@@ -89,10 +89,10 @@ namespace LibFFRNetwork
             File.AppendAllText(logFile, "Begin co-op session log (all times in UTC)");
         }
         private void Log(string message,
-                        [CallerLineNumber] int lineNumber = 0,
                         [CallerMemberName] string caller = null)
         {
-            string s = $"\n{DateTime.UtcNow.ToString("yyyy-MM-dd hh:mm:ss")} [state: {state}][{caller} line {lineNumber}] {message}";
+            //string s = $"\n{DateTime.UtcNow.ToString("yyyy-MM-dd hh:mm:ss")} [state: {state}][{caller}()] {message}";
+            string s = $"[state: {state}][{caller}()] {message}";
             if (prevLogMsg == s)
             {
                 prevLogRepetitions++;
@@ -105,7 +105,7 @@ namespace LibFFRNetwork
                     {
                         File.AppendAllText(logFile, $" (Message repeated {prevLogRepetitions}x)");
                     }
-                    File.AppendAllText(logFile, s);
+                    File.AppendAllText(logFile, $"\n{DateTime.UtcNow.ToString("yyyy-MM-dd hh:mm:ss")} {s}");
                     prevLogMsg = s;
                     prevLogRepetitions = 0;
                 } 
@@ -123,7 +123,9 @@ namespace LibFFRNetwork
         {
             try
             {
-                string res = await http.GetStringAsync($"http://{server}/version");
+                string versionURI = $"http://{server}/version";
+                Log($"Accessing URI: {versionURI}");
+                string res = await http.GetStringAsync(versionURI);
                 Log($"Got response: {res}");
                 var splitres = res.Split(new char[] { ';' });
                 bool dllUpToDate = (splitres[0] == DLL_VERSION);

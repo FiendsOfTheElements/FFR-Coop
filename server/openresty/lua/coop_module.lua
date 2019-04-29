@@ -1,43 +1,92 @@
+-- API:
+--/version
+--          returns dllVersion;scriptVersion
+--/join?team={team}&player={playername}
+--          returns current "data", usually 000000000000000000000000000
+--/init?player={playername}
+--          returns new team number
+--/coop?team={team}&player={playername}&data={data}
+--          returns "data", followed by a '{' separated list of users to map to items
+--/teamcheck?team={team}
+--          returns a json object:
+--              {"players": string array, "useritems": string array, "data": string, messages: string array, "team": string}
+
 local M = {}
 
 M.ep_version = function()
-    local cjson = require "cjson.safe"
-    ngx.print(cjson.encode({"0.09;0.09"}))
+    --local cjson = require "cjson.safe"
+    --ngx.print(cjson.encode({"0.09;0.09"}))
+
+    --dll version, then script version
+	ngx.print("0.09;0.09")
 end
 
 M.ep_init = function()
     local cjson = require "cjson.safe"
-    local ffr_coop = ngx.shared.ffr_coop
+    local redis = require "resty.redis"
+
     local args, err = ngx.req.get_uri_args()
     
     if err == "truncated" then
         --ngx.print(err)
         return
     end
+    local red = redis:new()
+
+    local ok, err = red:connect("database", 6379)
+    if not ok then
+        ngx.say("failed to connect: ", err)
+        return
+    end
+
+    
     math.randomseed(os.clock())
-    local x = math.floor(math.random() * 10000)
-    local s = tostring(x)
+    local x = 0
+    
+
+    local i = 0
+    while i < 10000 do
+        x = math.floor(math.random() * 10000)
+        local s = tostring(x)
+        i = i + 1
+        local check = red:get(s)
+        if check == ngx.null then break end
+    end
+
+    if i > 9999 then
+        return
+    end
+
     local defdata = "000000000000000000000000000"
     local emptyUserItems = {"","","","","","","","","","","","","","","","","","","","","","","","","","",""};
     local gameobject = {team=x, players = {args["player"]}, data = defdata, messages = {}, useritems = emptyUserItems}
     
-    ffr_coop:set(gameobject["team"], cjson.encode(gameobject), 216000)
+    red:set(gameobject["team"], cjson.encode(gameobject))
+    red:expire(gameobject["team"], 3600)
     ngx.print(x)
 
 end
 
 M.ep_join = function()
     local cjson = require "cjson.safe"
-    local ffr_coop = ngx.shared.ffr_coop
+    local redis = require "resty.redis"
+
     local args, err = ngx.req.get_uri_args()
     
     if err == "truncated" then
         --ngx.print(err)
         return
     end
+
+    local red = redis:new()
+    local ok, err = red:connect("database", 6379)
+    if not ok then
+        ngx.say("failed to connect: ", err)
+        return
+    end
     
-    local stored = ffr_coop:get(args["team"])
-    if not stored then
+    local stored = red:get(args["team"])
+    if stored == ngx.null then
         return
     end
     local defdata = "000000000000000000000000000"
@@ -45,7 +94,8 @@ M.ep_join = function()
     
     if gameobject["data"] == defdata then
         table.insert(gameobject["players"], args["player"])
-        ffr_coop:set(gameobject["team"], cjson.encode(gameobject))
+        red:set(gameobject["team"], cjson.encode(gameobject))
+        red:expire(gameobject["team"], 3600)
         ngx.print(defdata)
         return
     end
@@ -53,27 +103,42 @@ end
 
 M.ep_teamcheck = function()
     local cjson = require "cjson.safe"
-    local ffr_coop = ngx.shared.ffr_coop
+    local redis = require "resty.redis"
+
     local args, err = ngx.req.get_uri_args()
     if err == "truncated" then
         --ngx.print(err)
         return
     end
-    local stored = ffr_coop:get(args["team"])
-    if not stored then
+    local red = redis:new()
+    local ok, err = red:connect("database", 6379)
+    if not ok then
+        ngx.say("failed to connect: ", err)
         return
     end
-    local gobj = cjson.decode(stored)
-    local plist = table.concat(gobj["players"], "{")
-    ngx.print(plist)
+    local stored = red:get(args["team"])
+    if stored == ngx.null then
+        return
+    end
+    --local gobj = cjson.decode(stored)
+    --local plist = table.concat(gobj["players"], "{")
+    --ngx.print(plist)
+    ngx.print(stored)
 end
 
 M.ep_coop = function()
     local cjson = require "cjson.safe"
+    local redis = require "resty.redis"
     local args, err = ngx.req.get_uri_args()
     
     if err == "truncated" then
         ngx.print(err)
+        return
+    end
+    local red = redis:new()
+    local ok, err = red:connect("database", 6379)
+    if not ok then
+        ngx.say("failed to connect: ", err)
         return
     end
     
@@ -81,9 +146,8 @@ M.ep_coop = function()
                         "Chime", "Tail", "Cube", "Bottle", "Oxyale", "Ship", "Canoe", "Airship", "Bridge", "Canal", 
                         "SlabTranslation", "EarthOrb", "FireOrb", "WaterOrb", "AirOrb", "EndGame"}
     
-    local ffr_coop = ngx.shared.ffr_coop
     local data = args["data"]
-    local stored = ffr_coop:get(args["team"])
+    local stored = red:get(args["team"])
     local gameobj = cjson.decode(stored)
     local old_data = gameobj["data"]
     local concat_t = {}
@@ -111,7 +175,8 @@ M.ep_coop = function()
     end
     concat_s = table.concat(concat_t)
     gameobj["data"] = concat_s
-    ffr_coop:set(gameobj["team"], cjson.encode(gameobj), 216000)
+    red:set(gameobj["team"], cjson.encode(gameobj))
+    red:expire(gameobj["team"], 3600)
     concat_s = concat_s .. "{" .. table.concat(gameobj["useritems"], "{")
 
     ngx.print(concat_s)
