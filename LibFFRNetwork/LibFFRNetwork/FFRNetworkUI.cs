@@ -17,6 +17,7 @@ namespace LibFFRNetwork
         public delegate void joinDelegate();
         public event joinDelegate joinEvent;
         public int status = 1;
+        private bool tabsEnabled = false;
         public FFRNetworkUI()
         {
             InitializeComponent();
@@ -25,34 +26,39 @@ namespace LibFFRNetwork
             txtPlayername.Text = $"Lazyracer{usernameRandInt}";
             var statusTask = new Task(() => UpdateImage());
             statusTask.Start();
+            tabControl1.Selecting += TabControl1_Selecting;
         }
-
-        private void btnInit_Click(object sender, EventArgs e)
+        public void switchToTab(int i)
         {
-            btnInit.Enabled = false;
-            btnJoin.Enabled = false;
-            initEvent();
+            tabsEnabled = true;
+            tabControl1.SelectedTab = tabControl1.TabPages[i];
+            tabsEnabled = false;
         }
-        
+        private void TabControl1_Selecting(object sender, TabControlCancelEventArgs e)
+        {
+            e.Cancel = !tabsEnabled;
+        }
+        public int getPlayerLimit()
+        {
+            if (checkBox1.Checked)
+            {
+                return decimal.ToInt32(txtPlayerLimit.Value);
+            }
+            else
+            {
+                return 0;
+            }
+        }
         public void setInitText(string team)
         {
-            richTextBox1.Clear();
-            richTextBox1.Font = new Font("sans", 30.0f);
-            richTextBox1.AppendText(team);
-            panel1.Visible = true;
-            panel2.Visible = false;
+            txtTeamOutput.Text = team;
+            switchToTab(3);
         }
         public string getTeamText()
         {
-            return txtJoinTeam.Text;
+            return txtTeamJoin.Text;
         }
 
-        private void btnJoin_Click(object sender, EventArgs e)
-        {
-            btnInit.Enabled = false;
-            btnJoin.Enabled = false;
-            joinEvent();
-        }
         public string getPlayername()
         {
             string player = txtPlayername.Text.Replace('{', '[');
@@ -60,7 +66,7 @@ namespace LibFFRNetwork
             player = player.Replace('/', '_');
             player = player.Replace('&', '_');
             player = player.Replace('?', '_');
-            return txtPlayername.Text;
+            return player;
         }
         public void setStatusLine(string s)
         {
@@ -70,7 +76,7 @@ namespace LibFFRNetwork
         {
             return imgStatus;
         }
-        public async void UpdateImage()
+        public void UpdateImage()
         {
             do
             {
@@ -97,6 +103,77 @@ namespace LibFFRNetwork
             } while (true);
             
 
+        }
+
+        private void BtnTab1Continue_Click(object sender, EventArgs e)
+        {
+            switchToTab(1);
+        }
+
+        private void TxtPlayername_TextChanged(object sender, EventArgs e)
+        {
+            if (txtPlayername.Text == "")
+            {
+                btnTab1Continue.Enabled = false;
+            }
+            else
+            {
+                btnTab1Continue.Enabled = true;
+            }
+        }
+
+        private void BtnInit_Click_1(object sender, EventArgs e)
+        {
+            btnInit.Enabled = false;
+            initEvent();
+        }
+
+        private void BtnJoinChoice_Click(object sender, EventArgs e)
+        {
+            switchToTab(2);
+        }
+
+        private void BtnJoin_Click_1(object sender, EventArgs e)
+        {
+            btnJoin.Enabled = false;
+            btnJoinBack.Enabled = false;
+            joinEvent();
+        }
+
+        private void CheckBox1_CheckedChanged(object sender, EventArgs e)
+        {
+            txtPlayerLimit.Enabled = checkBox1.Checked;
+        }
+        public void joinFailed()
+        {
+            btnJoin.Enabled = true;
+            btnJoinBack.Enabled = true;
+        }
+
+        private void BtnJoinBack_Click(object sender, EventArgs e)
+        {
+            switchToTab(1);
+        }
+
+        private void LinkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            System.Diagnostics.Process.Start(@"https://github.com/BrianCumminger/FFR-Coop/releases");
+        }
+
+        private void TxtTeamJoin_TextChanged(object sender, EventArgs e)
+        {
+            if (txtTeamJoin.Text == "")
+            {
+                btnJoin.Enabled = false;
+            }
+            else
+            {
+                btnJoin.Enabled = true;
+            }
+        }
+        public void showDownloadLink()
+        {
+            linkLabel1.Text = "Update to new version";
         }
     }
 }

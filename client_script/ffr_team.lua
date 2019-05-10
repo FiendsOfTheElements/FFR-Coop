@@ -4,10 +4,10 @@ coop = cooptype()
 
 
 ------------------------------------------
---      FFR CO-OP MODE VERSION 0.09     --
+--      FFR CO-OP MODE VERSION 0.10     --
 --          MANUAL CONFIGURATION        --
 ------------------------------------------
-SCRIPT_VERSION = "0.09"
+SCRIPT_VERSION = "0.10"
 SERVER_IP = "142.166.18.108"
 DEBUG = true
 LOCAL = false
@@ -203,10 +203,16 @@ local function BeginHttp(k)
 end
 
 local function ProcessNewDataTable(k)
-	local resp = coop:GetResultTable(createKeyItemsTable());
+	local kit = createKeyItemsTable();
+	local resp = coop:GetResultTable(kit);
 	compareAndUpdateItems(k, resp);
 end
 
+local function MessageDispatch()
+	local messagetext = coop:GetMessage();
+	local msg = {TTL=450, message=messagetext, color=0xFF00FF00};
+	table.insert(item_messages, msg)
+end
 --local function GenericChecks()
 --	if (not gamestate.localChaosDefeated) and (IsChaosDead()) then
 --		gamestate.localChaosDefeated = true
@@ -237,6 +243,7 @@ local curstate = ""
 local checkedCurIter = 0;
 local statusColor = ""
 local doProcessing = false;
+
 local function StateOKForMainLoop()
 	--party has been created
 	if u8(0x6102) == 0 then
@@ -291,6 +298,8 @@ while true do
 				ProcessNewDataTable(keyitems);
 				frame = 0;
 				checkedCurIter = 0;
+			elseif curstate == "HasMessage" then
+				MessageDispatch();
 			end
 		end
 	end

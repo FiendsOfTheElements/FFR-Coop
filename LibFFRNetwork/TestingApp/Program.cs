@@ -11,6 +11,7 @@ namespace TestingApp
         static void Main(string[] args)
         {
             var a = new LibFFRNetwork.CoopHelper();
+
             Console.WriteLine($"Current state: {a.GetState()}");
             Console.ReadKey();
         }

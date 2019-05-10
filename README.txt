@@ -1,4 +1,4 @@
-FFR Coop Mode v0.09
+FFR Coop Mode v0.10
 
 Setup consists of two files:
     LibFFRNetwork.dll
@@ -27,15 +27,25 @@ Red = Error.
 Yellow = Yielding. This means the script is backing off to prevent lag.
 
 --==<[CHANGE LOG]>==--
+0.10:
+	- Everything is different.
+	- Complete server overhaul.  Server is now a python flask thing
+	  that requires redis, I'll make a docker image for it sometime
+	  in the future.
+	- New UI.  Should be straight forward to use.  Note the checkbox
+	  on the create team tab that allows you to create a match with a
+	  player limit.
+	- Players will be notified when a new player joins or reconnects.
+	- 60% friendlier.
 0.09:
 	- Added unreasonable amounts of logging.  Logs are created in the
-	subfolder '/logs' where the LibFFRNetwork.dll is located.
+	  subfolder '/logs' where the LibFFRNetwork.dll is located.
 0.08:
 	- Fixed uncaught exception.
 	- 10% friendlier.
 0.07:
 	- Lots more error handling.  Co-op can now handle being disconnected
-	and reconnected to a network.
+	  and reconnected to a network.
 	- Simple version check at startup.
 0.06:
 	- Added minimal error handling.

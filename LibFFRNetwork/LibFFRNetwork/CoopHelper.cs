@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
 using System.Runtime.CompilerServices;
+using Newtonsoft.Json;
 
 namespace LibFFRNetwork
 {
@@ -24,13 +25,14 @@ namespace LibFFRNetwork
     //JTSample jtsObject = JsonConvert.DeserializeObject<JTSample>(sample);
     public class CoopHelper
     {
-        private string DLL_VERSION = "0.09";
+        private string DLL_VERSION = "0.10";
         private string SCRIPT_VERSION = "";
 
         private string STATE_UNINITIALIZED = "Uninitialized";
         private string STATE_IDLE = "Idle";
         private string STATE_RECEIVING = "Receiving";
         private string STATE_HAS_DATA = "HasData";
+        private string STATE_HAS_MESSAGE = "HasMessage";
         private string STATE_ERROR = "Error";
 
         private string team = "50";
@@ -42,6 +44,7 @@ namespace LibFFRNetwork
         private bool initialized = false;
         private List<bool> resultList;
         private List<string> itemPlayerMap;
+        private List<string> messages;
         private FFRNetworkUI ui;
         Task uitask;
         System.Net.Http.HttpClient http;
@@ -73,6 +76,7 @@ namespace LibFFRNetwork
             server = "localhost";
             state = STATE_UNINITIALIZED;
             itemPlayerMap = new List<string>();
+            messages = new List<string>();
             http = new System.Net.Http.HttpClient();
             http.Timeout = new TimeSpan(0, 0, 30);
 
@@ -141,12 +145,14 @@ namespace LibFFRNetwork
                     Log("Co-op DLL is out of date.");
                     ui.setStatusLine("Co-op DLL is out of date.");
                     ui.status = 4;
+                    ui.showDownloadLink();
                 }
                 else if (!scriptUpToDate)
                 {
                     Log("Co-op Lua script is out of date.");
                     ui.setStatusLine("Co-op Lua script is out of date.");
                     ui.status = 4;
+                    ui.showDownloadLink();
                 }
             }
             catch (System.Net.Http.HttpRequestException e)
@@ -204,9 +210,11 @@ namespace LibFFRNetwork
             string joinURI = $"http://{server}/join?team={teamstring}&player={playername}";
             Log($"Accessing URI: {joinURI}");
             string res = await http.GetStringAsync(joinURI);
-            if (false)
+            if (res.Contains("Error"))
             {
-                state = STATE_ERROR;
+                ui.joinFailed();
+                ui.setStatusLine(res);
+                state = STATE_UNINITIALIZED;
             }
             else
             {
@@ -215,14 +223,16 @@ namespace LibFFRNetwork
                 initialized = true;
                 Log($"Successfully joined team {team}.");
                 ui.setStatusLine($"Successfully joined team {team}.");
+                ui.setInitText(team);
             }
         }
         private async void Ui_initEvent()
         {
             Log("Initialize Team event triggered");
             playername = ui.getPlayername();
+            string limit = ui.getPlayerLimit().ToString();
             Log($"Using player name: {playername}");
-            string initURI = $"http://{server}/init?player={playername}";
+            string initURI = $"http://{server}/init?player={playername}&limit={limit}";
             Log($"Accessing URI: {initURI}");
             string teamstring = await http.GetStringAsync(initURI);
             Log($"Got team number {teamstring}");
@@ -284,20 +294,29 @@ namespace LibFFRNetwork
                 Log($"Accessing URI: {sendURI}");
                 string res = await http.GetStringAsync(sendURI);
                 Log($"Got response: {res}");
-                var splitres = res.Split(new char[] { '{' });
-                Result = splitres[0];
-                itemPlayerMap = splitres.Skip(1).ToList();
+
+                CoopResponse resObj = JsonConvert.DeserializeObject<CoopResponse>(res);
+                itemPlayerMap = resObj.playeritems;
+                Result = resObj.data;
+
+                //var splitres = res.Split(new char[] { '{' });
+                //Result = splitres[0];
+                //itemPlayerMap = splitres.Skip(1).ToList();
                 resultList = new List<bool>();
-                for (int i = 0; i < res.Length; i++)
+                for (int i = 0; i < Result.Length; i++)
                 {
-                    if (res[i] == '0')
+                    if (Result[i] == '0')
                     {
                         resultList.Add(false);
                     }
-                    if (res[i] == '1')
+                    if (Result[i] == '1')
                     {
                         resultList.Add(true);
                     }
+                }
+                foreach (string message in resObj.messages)
+                {
+                    messages.Add(message);
                 }
                 Log("Setting state to HAS_DATA");
                 state = STATE_HAS_DATA;
@@ -354,7 +373,7 @@ namespace LibFFRNetwork
                 Log("THIS SHOULD NOT BE HAPPENING");
             }
 
-            
+
             string outdata = "";
             for (int i = 0; i < KeyItemsOrder.Count; i++)
             {
@@ -368,7 +387,7 @@ namespace LibFFRNetwork
                     outdata += "0";
                 }
             }
-            Log($"Calling backgroundSend with data: {outdata}");
+            Log($"Calling backgroundSend with data: {k}");
             backgroundSend(outdata);
         }
         public NLua.LuaTable GetResultTable(NLua.LuaTable k)
@@ -385,9 +404,31 @@ namespace LibFFRNetwork
             }
             Log("Resetting state and returning result table.");
             Result = "";
-            state = STATE_IDLE;
+            if (messages.Count > 0)
+            {
+                state = STATE_HAS_MESSAGE;
+            }
+            else
+            {
+                state = STATE_IDLE;
+            }
+            
             return k;
             
+        }
+        public string GetMessage()
+        {
+            string retmsg = messages.First();
+            messages.Remove(retmsg);
+            if (messages.Count > 0)
+            {
+                state = STATE_HAS_MESSAGE;
+            }
+            else
+            {
+                state = STATE_IDLE;
+            }
+            return retmsg;
         }
         public void ReportRomName(string romname)
         {
