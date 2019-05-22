@@ -9,7 +9,7 @@ coop = cooptype()
 ------------------------------------------
 SCRIPT_VERSION = "0.10"
 SERVER_IP = "142.166.18.108"
-DEBUG = true
+DEBUG = false
 LOCAL = false
 
 local u8 = nil
@@ -73,6 +73,39 @@ local function createKeyItemsTable()
 	
 	return k;
 end
+local checkItemFunctions = {
+	Lute = 		function() return u8(0x6021) > 0 end;
+	Crown = 	function() return u8(0x6022) > 0 end;
+	Key = 		function() return u8(0x6025) > 0 end;
+	Rod = 		function() return u8(0x602A) > 0 end;
+	Floater = 	function() return u8(0x602B) > 0 end;
+	Chime = 	function() return u8(0x602C) > 0 end;
+	Cube = 		function() return u8(0x602E) > 0 end;
+	Oxyale = 	function() return u8(0x6030) > 0 end;
+	Ship = 		function() return u8(0x6000) > 0 end;
+	Canoe = 	function() return u8(0x6012) > 0 end;
+	Airship = 	function() return u8(0x6004) > 0 end;
+	Bridge = 	function() return u8(0x6008) > 0 end;
+	FireOrb = 	function() if (u8(0x6032) > 0 and not shardhuntmode) then return true else return false end end;
+	WaterOrb = 	function() if (u8(0x6033) > 0 and not shardhuntmode) then return true else return false end end;
+	AirOrb = 	function() if (u8(0x6034) > 0 and not shardhuntmode) then return true else return false end end;
+	EarthOrb = 	function() if (u8(0x6031) > 0 and not shardhuntmode) then return true else return false end end;
+
+	--reverse items
+	Canal = 	function() return u8(0x600C) == 0 end;
+	
+	--complex items
+	Crystal = 	function() if ((u8(0x6023) > 0 ) or (bit.band(u8(0x620A), 0x02) >  0))  then return true else return false end end;
+	Herb = 		function() if ((u8(0x6024) > 0 ) or (bit.band(u8(0x6205), 0x02) >  0))  then return true else return false end end;
+	TNT = 		function() if ((u8(0x6026) > 0 ) or (bit.band(u8(0x6208), 0x02) >  0))  then return true else return false end end;
+	Adamant = 	function() if ((u8(0x6027) > 0 ) or (bit.band(u8(0x6209), 0x02) >  0))  then return true else return false end end;
+	Slab = 		function() if ((u8(0x6028) > 0 ) or (bit.band(u8(0x620B), 0x02) >  0))  then return true else return false end end;
+	Ruby = 		function() if ((u8(0x6029) > 0 ) or (bit.band(u8(0x6214), 0x01) == 0))  then return true else return false end end;
+	Tail = 		function() if ((u8(0x602D) > 0 ) or (bit.band(u8(0x620E), 0x02) >  0))  then return true else return false end end;
+	Bottle = 	function() if ((u8(0x602F) > 0 ) or (bit.band(u8(0x6213), 0x03) >  0))  then return true else return false end end;
+	
+	SlabTranslation = function() return (bit.band(u8(0x620B), 0x02) > 0) end;
+};
 local giveItemFunctions = {
 	Lute= 				function() w_u8(0x0021, 0x01) end;
 	Crown= 				function() w_u8(0x0022, 0x01) end;
@@ -102,13 +135,32 @@ local giveItemFunctions = {
 	AirOrb=				function() w_u8(0x0034, 0x01) end;
 	EndGame=			function() end;
 };
+local function safeToRead()
+	local canarySave55 = u8(0x60FE);
+	local canarySaveAA = u8(0x60FF);
+	local canaryFireOrb = u8(0x6032);
+	local canaryAirOrb = u8(0x6034);
+	if (not canarySave55 == 0x55) or (not canarySaveAA == 0xAA) or (canaryFireOrb + canaryAirOrb > 20) then
+		--debug_log("Canary tripped");
+		--debug_log("frame variable: "..frame);
+		return false;
+	else
+		return true;
+	end
+end
 
 local function giveItem(item)
 	debug_log("giveItem called with item "..item)
+	
+	if not safeToRead() then
+		return;
+	end
+	if checkItemFunctions[item]() then
+		return;
+	end
 	--change to battery RAM memory domain
 	mem_domain.saveram();
 	giveItemFunctions[item]()
-	
 	mem_domain.systembus();
 	
 	local itemplayer = coop:GetUsernameForItem(item)
@@ -149,40 +201,41 @@ local function IsChaosDead()
 	
 end
 
+
 local function updateKeyItemsTable(k)
 	
 	--simple items
-	if u8(0x6021) > 0 then k["Lute"] = 		true else k["Lute"] = 		false end;
-	if u8(0x6022) > 0 then k["Crown"] = 	true else k["Crown"] = 		false end;
-	if u8(0x6025) > 0 then k["Key"] = 		true else k["Key"] = 		false end;
-	if u8(0x602A) > 0 then k["Rod"] = 		true else k["Rod"] = 		false end;
-	if u8(0x602B) > 0 then k["Floater"] = 	true else k["Floater"] = 	false end;
-	if u8(0x602C) > 0 then k["Chime"] = 	true else k["Chime"] = 		false end;
-	if u8(0x602E) > 0 then k["Cube"] = 		true else k["Cube"] = 		false end;
-	if u8(0x6030) > 0 then k["Oxyale"] = 	true else k["Oxyale"] = 	false end;
-	if u8(0x6000) > 0 then k["Ship"] = 		true else k["Ship"] = 		false end;
-	if u8(0x6012) > 0 then k["Canoe"] = 	true else k["Canoe"] = 		false end;
-	if u8(0x6004) > 0 then k["Airship"] = 	true else k["Airship"] = 	false end;
-	if u8(0x6008) > 0 then k["Bridge"] = 	true else k["Bridge"] = 	false end;
-	if (u8(0x6032) > 0 and not shardhuntmode)    then k["FireOrb"] = 	true else k["FireOrb"]  = 	false end;
-	if (u8(0x6033) > 0 and not shardhuntmode)    then k["WaterOrb"] = 	true else k["WaterOrb"] = 	false end;
-	if (u8(0x6034) > 0 and not shardhuntmode)    then k["AirOrb"] = 	true else k["AirOrb"]   = 	false end;
-	if (u8(0x6031) > 0 and not shardhuntmode)    then k["EarthOrb"] = 	true else k["EarthOrb"] = 	false end;
+	if u8(0x6021) > 0 and safeToRead() then k["Lute"] = 	true else k["Lute"] = 		false end;
+	if u8(0x6022) > 0 and safeToRead() then k["Crown"] = 	true else k["Crown"] = 		false end;
+	if u8(0x6025) > 0 and safeToRead() then k["Key"] = 		true else k["Key"] = 		false end;
+	if u8(0x602A) > 0 and safeToRead() then k["Rod"] = 		true else k["Rod"] = 		false end;
+	if u8(0x602B) > 0 and safeToRead() then k["Floater"] = 	true else k["Floater"] = 	false end;
+	if u8(0x602C) > 0 and safeToRead() then k["Chime"] = 	true else k["Chime"] = 		false end;
+	if u8(0x602E) > 0 and safeToRead() then k["Cube"] = 	true else k["Cube"] = 		false end;
+	if u8(0x6030) > 0 and safeToRead() then k["Oxyale"] = 	true else k["Oxyale"] = 	false end;
+	if u8(0x6000) > 0 and safeToRead() then k["Ship"] = 	true else k["Ship"] = 		false end;
+	if u8(0x6012) > 0 and safeToRead() then k["Canoe"] = 	true else k["Canoe"] = 		false end;
+	if u8(0x6004) > 0 and safeToRead() then k["Airship"] = 	true else k["Airship"] = 	false end;
+	if u8(0x6008) > 0 and safeToRead() then k["Bridge"] = 	true else k["Bridge"] = 	false end;
+	if (u8(0x6032) > 0 and safeToRead() and not shardhuntmode)    then k["FireOrb"] = 	true else k["FireOrb"]  = 	false end;
+	if (u8(0x6033) > 0 and safeToRead() and not shardhuntmode)    then k["WaterOrb"] = 	true else k["WaterOrb"] = 	false end;
+	if (u8(0x6034) > 0 and safeToRead() and not shardhuntmode)    then k["AirOrb"] = 	true else k["AirOrb"]   = 	false end;
+	if (u8(0x6031) > 0 and safeToRead() and not shardhuntmode)    then k["EarthOrb"] = 	true else k["EarthOrb"] = 	false end;
 
 	--reverse items
-	if u8(0x600C) == 0 then k["Canal"] = true  else k["Canal"] = false end;
+	if safeToRead() and u8(0x600C) == 0 then k["Canal"] = true  else k["Canal"] = false end;
 	
 	--complex items
-	if (u8(0x6023) > 0 ) or (bit.band(u8(0x620A), 0x02) > 0) then k["Crystal"] = 	true else k["Crystal"] = 	false end;
-	if (u8(0x6024) > 0 ) or (bit.band(u8(0x6205), 0x02) > 0) then k["Herb"] = 		true else k["Herb"] = 		false end;
-	if (u8(0x6026) > 0 ) or (bit.band(u8(0x6208), 0x02) > 0) then k["TNT"] = 		true else k["TNT"] = 		false end;
-	if (u8(0x6027) > 0 ) or (bit.band(u8(0x6209), 0x02) > 0) then k["Adamant"] = 	true else k["Adamant"] = 	false end;
-	if (u8(0x6028) > 0 ) or (bit.band(u8(0x620B), 0x02) > 0) then k["Slab"] = 		true else k["Slab"] = 		false end;
-	if (u8(0x6029) > 0 ) or (bit.band(u8(0x6214), 0x01) == 0) then k["Ruby"] = 		true else k["Ruby"] = 		false end;
-	if (u8(0x602D) > 0 ) or (bit.band(u8(0x620E), 0x02) > 0) then k["Tail"] = 		true else k["Tail"] = 		false end;
-	if (u8(0x602F) > 0 ) or (bit.band(u8(0x6213), 0x03) > 0) then k["Bottle"] = 	true else k["Bottle"] =		false end;
+	if safeToRead() and ((u8(0x6023) > 0 ) or (bit.band(u8(0x620A), 0x02) >  0))  then k["Crystal"] = 	true else k["Crystal"] = 	false end;
+	if safeToRead() and ((u8(0x6024) > 0 ) or (bit.band(u8(0x6205), 0x02) >  0))  then k["Herb"] = 		true else k["Herb"] = 		false end;
+	if safeToRead() and ((u8(0x6026) > 0 ) or (bit.band(u8(0x6208), 0x02) >  0))  then k["TNT"] = 		true else k["TNT"] = 		false end;
+	if safeToRead() and ((u8(0x6027) > 0 ) or (bit.band(u8(0x6209), 0x02) >  0))  then k["Adamant"] = 	true else k["Adamant"] = 	false end;
+	if safeToRead() and ((u8(0x6028) > 0 ) or (bit.band(u8(0x620B), 0x02) >  0))  then k["Slab"] = 		true else k["Slab"] = 		false end;
+	if safeToRead() and ((u8(0x6029) > 0 ) or (bit.band(u8(0x6214), 0x01) == 0))  then k["Ruby"] = 		true else k["Ruby"] = 		false end;
+	if safeToRead() and ((u8(0x602D) > 0 ) or (bit.band(u8(0x620E), 0x02) >  0))  then k["Tail"] = 		true else k["Tail"] = 		false end;
+	if safeToRead() and ((u8(0x602F) > 0 ) or (bit.band(u8(0x6213), 0x03) >  0))  then k["Bottle"] = 	true else k["Bottle"] =		false end;
 	
-	if (bit.band(u8(0x620B), 0x02) > 0) then k["SlabTranslation"] = true else k["SlabTranslation"] = false end;
+	if safeToRead() and (bit.band(u8(0x620B), 0x02) > 0) then k["SlabTranslation"] = true else k["SlabTranslation"] = false end;
 	if IsChaosDead() or gamestate["chaosDefeatedRemotely"] then 
 		--gamestate.localChaosDefeated = true;
 		k["EndGame"] = true;
@@ -213,12 +266,6 @@ local function MessageDispatch()
 	local msg = {TTL=450, message=messagetext, color=0xFF00FF00};
 	table.insert(item_messages, msg)
 end
---local function GenericChecks()
---	if (not gamestate.localChaosDefeated) and (IsChaosDead()) then
---		gamestate.localChaosDefeated = true
---		--send generic message
---	end
---end
 
 local function drawMessages()
 	if table.empty(item_messages) then
@@ -236,7 +283,7 @@ end
 
 local keyitems = createKeyItemsTable();
 gamestate = {};
-local frame = 0;
+frame = 0;
 
 local prevstate = ""
 local curstate = ""
@@ -310,6 +357,5 @@ while true do
 	end
 	if (frame > 450) and (frame % 60 == 0) then doProcessing = true end
 	--debug_log(string.format("whole loop executed in %.3f ms", os.clock() - lc))
-	--GenericChecks();
 	emu.frameadvance();
 end
