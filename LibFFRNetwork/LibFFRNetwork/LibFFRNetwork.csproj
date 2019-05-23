@@ -54,6 +54,12 @@
   <ItemGroup>
     <Compile Include="CoopHelper.cs" />
     <Compile Include="CoopResponse.cs" />
+    <Compile Include="Credits.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Credits.Designer.cs">
+      <DependentUpon>Credits.cs</DependentUpon>
+    </Compile>
     <Compile Include="FFRNetworkUI.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -68,6 +74,9 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Credits.resx">
+      <DependentUpon>Credits.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="FFRNetworkUI.resx">
       <DependentUpon>FFRNetworkUI.cs</DependentUpon>
     </EmbeddedResource>

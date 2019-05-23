@@ -78,7 +78,7 @@ namespace LibFFRNetwork
             itemPlayerMap = new List<string>();
             messages = new List<string>();
             http = new System.Net.Http.HttpClient();
-            http.Timeout = new TimeSpan(0, 0, 30);
+            http.Timeout = new TimeSpan(0, 0, 5);
 
             uitask = new Task(() => startUI());
             Log("Starting UI task");

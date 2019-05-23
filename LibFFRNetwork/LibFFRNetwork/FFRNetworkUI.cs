@@ -175,5 +175,11 @@ namespace LibFFRNetwork
         {
             linkLabel1.Text = "Update to new version";
         }
+
+        private void ImgStatus_Click(object sender, EventArgs e)
+        {
+            var credits = new Credits();
+            credits.Show();
+        }
     }
 }
