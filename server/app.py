@@ -123,7 +123,7 @@ def addMessageToPlayers(message: str, playernames: list):
 @app.route('/version')
 def epVersion():
     # dll version, then script version
-    return "0.10;0.10"
+    return "0.11;0.11"
 
 @app.route('/init')
 def epInit():

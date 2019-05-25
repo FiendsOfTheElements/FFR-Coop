@@ -4,10 +4,10 @@ coop = cooptype()
 
 
 ------------------------------------------
---      FFR CO-OP MODE VERSION 0.10     --
+--      FFR CO-OP MODE VERSION 0.11     --
 --          MANUAL CONFIGURATION        --
 ------------------------------------------
-SCRIPT_VERSION = "0.10"
+SCRIPT_VERSION = "0.11"
 SERVER_IP = "142.166.18.108"
 DEBUG = false
 LOCAL = false
@@ -105,6 +105,7 @@ local checkItemFunctions = {
 	Bottle = 	function() if ((u8(0x602F) > 0 ) or (bit.band(u8(0x6213), 0x03) >  0))  then return true else return false end end;
 	
 	SlabTranslation = function() return (bit.band(u8(0x620B), 0x02) > 0) end;
+	EndGame = 		  function() return false end;
 };
 local giveItemFunctions = {
 	Lute= 				function() w_u8(0x0021, 0x01) end;

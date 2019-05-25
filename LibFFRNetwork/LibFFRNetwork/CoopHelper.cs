@@ -25,7 +25,7 @@ namespace LibFFRNetwork
     //JTSample jtsObject = JsonConvert.DeserializeObject<JTSample>(sample);
     public class CoopHelper
     {
-        private string DLL_VERSION = "0.10";
+        private string DLL_VERSION = "0.11";
         private string SCRIPT_VERSION = "";
 
         private string STATE_UNINITIALIZED = "Uninitialized";

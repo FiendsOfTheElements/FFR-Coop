@@ -1,4 +1,4 @@
-FFR Coop Mode v0.10
+FFR Coop Mode v0.11
 
 Setup consists of two files:
     LibFFRNetwork.dll
@@ -27,6 +27,10 @@ Red = Error.
 Yellow = Yielding. This means the script is backing off to prevent lag.
 
 --==<[CHANGE LOG]>==--
+0.11:
+	- Fixed bug where you accidentally got everything.
+	- Added credits screen to the UI.
+	- Default configuration does not log as much information.
 0.10:
 	- Everything is different.
 	- Complete server overhaul.  Server is now a python flask thing
