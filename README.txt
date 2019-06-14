@@ -1,15 +1,15 @@
-FFR Coop Mode v0.11
+FFR Coop Mode v0.12
 
 Setup consists of two files:
     LibFFRNetwork.dll
 	ffr_team.lua
 	
 Place the LibFFRNetwork.dll file into your BizHawk's dll folder
-ex. D:\games\emulators\BizHawk-2.3\dll
+ex. D:\games\emulators\BizHawk-2.3.1\dll
 
 The ffr_team.lua file can be placed anywhere but for convenience
 it is recommended to put into BizHawk's lua folder
-ex. D:\games\emulators\BizHawk-2.3\Lua
+ex. D:\games\emulators\BizHawk-2.3.1\Lua
 
 Load an FFR ROM before loading the lua script.  When you load the
 lua script before the game has begun, you should see a white dot
@@ -27,6 +27,9 @@ Red = Error.
 Yellow = Yielding. This means the script is backing off to prevent lag.
 
 --==<[CHANGE LOG]>==--
+0.12:
+	- Changed the way a few methods marshal data between
+	  .NET/lua in an effort to solve some errors.
 0.11:
 	- Fixed bug where you accidentally got everything.
 	- Added credits screen to the UI.

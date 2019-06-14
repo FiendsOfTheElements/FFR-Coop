@@ -4,10 +4,10 @@ coop = cooptype()
 
 
 ------------------------------------------
---      FFR CO-OP MODE VERSION 0.11     --
+--      FFR CO-OP MODE VERSION 0.12     --
 --          MANUAL CONFIGURATION        --
 ------------------------------------------
-SCRIPT_VERSION = "0.11"
+SCRIPT_VERSION = "0.12"
 SERVER_IP = "142.166.18.108"
 DEBUG = false
 LOCAL = false
@@ -63,7 +63,9 @@ function debug_log(s)
 end
 
 item_messages = {};
-
+local KEYITEM_ORDER = {"Lute", "Crown", "Crystal", "Herb", "Key", "TNT", "Adamant", "Slab", "Ruby",
+					   "Rod", "Floater", "Chime", "Tail", "Cube", "Bottle", "Oxyale", "Ship", "Canoe",
+					   "Airship", "Bridge", "Canal", "SlabTranslation", "EarthOrb", "FireOrb", "WaterOrb", "AirOrb", "EndGame"};
 local function createKeyItemsTable()
 	local k = {	Lute=false, 	Crown=false, 	Crystal=false, 	Herb=false, 			Key=false, 		TNT=false, 
 				Adamant=false, 	Slab=false, 	Ruby=false, 	Rod=false, 				Floater=false, 	Chime=false, 
@@ -252,14 +254,37 @@ function table.empty (self)
     return true
 end
 
-local function BeginHttp(k)
-	coop:SendDataTable(k)
+local function BeginHttp(kit)
+	local datastringtable = {};
+	for _, v in pairs(KEYITEM_ORDER) do
+		if kit[v] == true then
+			table.insert(datastringtable, "1")
+		else
+			table.insert(datastringtable, "0")
+		end
+	end
+	local datastring = table.concat(datastringtable)
+	coop:SendDataString(datastring)
+end
+
+local function DataStringToTable(s)
+	local t = createKeyItemsTable();
+	for i = 1, #s do
+		local c = s:sub(i,i);
+		if c == "1" then
+			t[KEYITEM_ORDER[i]] = true;
+		end
+	end
+	return t;
 end
 
 local function ProcessNewDataTable(k)
-	local kit = createKeyItemsTable();
-	local resp = coop:GetResultTable(kit);
-	compareAndUpdateItems(k, resp);
+	--local kit = createKeyItemsTable();
+	--local resp = coop:GetResultTable(kit);
+
+	local resp = coop:GetResultString();
+	local resp_table = DataStringToTable(resp);
+	compareAndUpdateItems(k, resp_table);
 end
 
 local function MessageDispatch()

@@ -351,12 +351,7 @@ namespace LibFFRNetwork
             return itemPlayerMap[i];
         }
 
-        public void SendDataTable(NLua.LuaTable k)
-        {
-            Log("Starting send data table task");
-            Task.Run(() => SendDataTableWorker(k));
-        }
-        private void SendDataTableWorker(NLua.LuaTable k)
+        public void SendDataString(string s)
         {
             if (!initialized)
             {
@@ -373,36 +368,25 @@ namespace LibFFRNetwork
                 Log("THIS SHOULD NOT BE HAPPENING");
             }
 
+            Log("Starting send data string task");
+            Task.Run(() => SendDataStringWorker(s));
 
-            string outdata = "";
-            for (int i = 0; i < KeyItemsOrder.Count; i++)
-            {
-                bool curitem = (bool)(k[KeyItemsOrder[i]]);
-                if (curitem)
-                {
-                    outdata += "1";
-                }
-                else
-                {
-                    outdata += "0";
-                }
-            }
-            Log($"Calling backgroundSend with data: {k}");
-            backgroundSend(outdata);
         }
-        public NLua.LuaTable GetResultTable(NLua.LuaTable k)
+        private void SendDataStringWorker(string s)
         {
-            Log("Lua requested result table");
+            Log($"Calling backgroundSend with data: {s}");
+            backgroundSend(s);
+        }
+        public string GetResultString()
+        {
+            Log("Lua requested result string");
             if (!initialized)
             {
                 Log("Not initialized.  Returning.");
                 return null;
             }
-            for (int i = 0; i < KeyItemsOrder.Count; i++)
-            {
-                k[KeyItemsOrder[i]] = resultList[i];
-            }
             Log("Resetting state and returning result table.");
+            string outResult = Result;
             Result = "";
             if (messages.Count > 0)
             {
@@ -412,9 +396,9 @@ namespace LibFFRNetwork
             {
                 state = STATE_IDLE;
             }
-            
-            return k;
-            
+
+            return outResult;
+
         }
         public string GetMessage()
         {
