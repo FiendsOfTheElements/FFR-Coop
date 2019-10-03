@@ -1,4 +1,4 @@
-FFR Coop Mode v0.12
+FFR Coop Mode v0.13
 
 Setup consists of two files:
     LibFFRNetwork.dll
@@ -27,6 +27,9 @@ Red = Error.
 Yellow = Yielding. This means the script is backing off to prevent lag.
 
 --==<[CHANGE LOG]>==--
+0.13:
+	- Fixed crashing when server is down.
+	- Updated script to use new domain.
 0.12:
 	- Changed the way a few methods marshal data between
 	  .NET/lua in an effort to solve some errors.

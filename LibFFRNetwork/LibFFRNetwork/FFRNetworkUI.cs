@@ -58,6 +58,10 @@ namespace LibFFRNetwork
         {
             return txtTeamJoin.Text;
         }
+        public void disableContinueButton()
+        {
+            btnTab1Continue.Enabled = false;
+        }
 
         public string getPlayername()
         {

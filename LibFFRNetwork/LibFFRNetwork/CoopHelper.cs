@@ -25,7 +25,7 @@ namespace LibFFRNetwork
     //JTSample jtsObject = JsonConvert.DeserializeObject<JTSample>(sample);
     public class CoopHelper
     {
-        private string DLL_VERSION = "0.12";
+        private string DLL_VERSION = "0.13";
         private string SCRIPT_VERSION = "";
 
         private string STATE_UNINITIALIZED = "Uninitialized";
@@ -155,12 +155,13 @@ namespace LibFFRNetwork
                     ui.showDownloadLink();
                 }
             }
-            catch (System.Net.Http.HttpRequestException e)
+            catch (Exception e)
             {
                 Log($"Exception: {e.Message}\n{e.StackTrace}");
                 Log("Error checking for updates.  Co-op server may be down.");
                 ui.setStatusLine("Error checking for updates.  Co-op server may be down.");
                 ui.status = 4;
+                ui.disableContinueButton();
             }
 
         }
@@ -184,16 +185,16 @@ namespace LibFFRNetwork
             return ret;
         }
 
-        public string testLuaTable(NLua.LuaTable t)
-        {
-            string ret = "";
-            foreach (var key in t.Keys)
-            {
-                ret += $"Key: {key.ToString()}, Value: {t[key].ToString()}\n";
-            }
+        //public string testLuaTable(NLua.LuaTable t)
+        //{
+        //    string ret = "";
+        //    foreach (var key in t.Keys)
+        //    {
+        //        ret += $"Key: {key.ToString()}, Value: {t[key].ToString()}\n";
+        //    }
 
-            return ret;
-        }
+        //    return ret;
+        //}
 
         private async void Ui_joinEvent()
         {

@@ -4,11 +4,11 @@ coop = cooptype()
 
 
 ------------------------------------------
---      FFR CO-OP MODE VERSION 0.12     --
+--      FFR CO-OP MODE VERSION 0.12a    --
 --          MANUAL CONFIGURATION        --
 ------------------------------------------
-SCRIPT_VERSION = "0.12"
-SERVER_IP = "142.166.18.108"
+SCRIPT_VERSION = "0.13"
+SERVER_IP = "co-op.finalfantasyrandomizer.com"
 DEBUG = false
 LOCAL = false
 
