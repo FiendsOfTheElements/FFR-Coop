@@ -69,7 +69,7 @@ class PlayerObject():
 
 class CoopDB():
     def __init__(self):
-        self._redis = Redis(host="localhost")
+        self._redis = Redis(host=os.environ.get('REDIS_HOST', 'localhost'))
 
     def refreshKey(self, key: str, seconds=3600*24):
         self._redis.expire(key, seconds)
