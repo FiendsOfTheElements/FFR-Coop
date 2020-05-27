@@ -9,6 +9,7 @@ jobs:
       - run:
           name: Dockerize
           command: |
+            cd server/
             docker login -u $DOCKER_USER -p $DOCKER_PASS && \
             docker build -t fiendsoftheelements/ffr-coop:latest -f Dockerfile . && \
             docker push fiendsoftheelements/ffr-coop:latest
