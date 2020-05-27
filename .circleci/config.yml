@@ -1,0 +1,41 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/node:8
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Dockerize
+          command: |
+            docker login -u $DOCKER_USER -p $DOCKER_PASS && \
+            docker build -t fiendsoftheelements/ffr-coop:latest -f Dockerfile . && \
+            docker push fiendsoftheelements/ffr-coop:latest
+  deploy:
+    docker:
+      - image: circleci/node:8
+    steps:
+      - checkout
+      - run:
+          name: deploy
+          command: |
+            mkdir -p ~/.ssh && \
+            cp .ssh/known_hosts ~/.ssh/known_hosts && \
+            ssh circle@finalfantasyrandomizer.com "./deployffrcoop.sh"
+
+workflows:
+  version: 2
+  main:
+    jobs:
+      - build:
+          filters:
+            branches:
+              only: master
+      - deploy:
+          requires:
+            - build
+          filters:
+            branches:
+              only: master
+
