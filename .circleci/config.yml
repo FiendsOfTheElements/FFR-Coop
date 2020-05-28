@@ -23,7 +23,7 @@ jobs:
           command: |
             mkdir -p ~/.ssh && \
             cp .ssh/known_hosts ~/.ssh/known_hosts && \
-            ssh circle@finalfantasyrandomizer.com "./deployffrcoop.sh"
+            ssh circle@co-op.finalfantasyrandomizer.com "./deployffrcoop.sh"
 
 workflows:
   version: 2
