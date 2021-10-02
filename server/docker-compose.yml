@@ -1,0 +1,19 @@
+services:
+  bot:
+    build: .
+    image: fiendsoftheelements/ffr-coop
+    environment:
+      REDIS_HOST: redis
+    links:
+      - redis
+    restart: always
+    ports:
+      - 5555:5555
+  redis:
+    image: redis
+    command: redis-server --appendonly yes
+    volumes:
+      - ffrcoop-data:/data
+    restart: always
+volumes:
+  ffrcoop-data: {}
