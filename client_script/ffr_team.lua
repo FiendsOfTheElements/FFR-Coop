@@ -7,13 +7,24 @@ coop = cooptype()
 --      FFR CO-OP MODE VERSION 0.12a    --
 --          MANUAL CONFIGURATION        --
 ------------------------------------------
-SCRIPT_VERSION = "0.13"
+SCRIPT_VERSION = "0.13b"
 SERVER_IP = "co-op.finalfantasyrandomizer.com"
 DEBUG = false
 LOCAL = false
 
 local u8 = nil
 local w_u8 = nil
+
+--Horrible hack to dynamically define bitwise functions based on lua version
+Band = function(op1, op2) end
+Bor = function(op1, op2) end
+if string.sub(_VERSION, -1,-1) == "4" then
+    assert(load("Band = function(op1, op2) return op1 & op2 end"))()
+	assert(load("Bor = function(op1, op2) return op1 | op2 end"))()
+else
+    assert(loadstring("Band = function(op1, op2) return bit.band(op1, op2) end"))()
+	assert(loadstring("Bor = function(op1, op2) return bit.bor(op1, op2) end"))()
+end
 
 
 --Sets correct memory access functions based on whether NesHawk or QuickNES is loaded
@@ -97,16 +108,16 @@ local checkItemFunctions = {
 	Canal = 	function() return u8(0x600C) == 0 end;
 	
 	--complex items
-	Crystal = 	function() if ((u8(0x6023) > 0 ) or (bit.band(u8(0x620A), 0x02) >  0))  then return true else return false end end;
-	Herb = 		function() if ((u8(0x6024) > 0 ) or (bit.band(u8(0x6205), 0x02) >  0))  then return true else return false end end;
-	TNT = 		function() if ((u8(0x6026) > 0 ) or (bit.band(u8(0x6208), 0x02) >  0))  then return true else return false end end;
-	Adamant = 	function() if ((u8(0x6027) > 0 ) or (bit.band(u8(0x6209), 0x02) >  0))  then return true else return false end end;
-	Slab = 		function() if ((u8(0x6028) > 0 ) or (bit.band(u8(0x620B), 0x02) >  0))  then return true else return false end end;
-	Ruby = 		function() if ((u8(0x6029) > 0 ) or (bit.band(u8(0x6214), 0x01) == 0))  then return true else return false end end;
-	Tail = 		function() if ((u8(0x602D) > 0 ) or (bit.band(u8(0x620E), 0x02) >  0))  then return true else return false end end;
-	Bottle = 	function() if ((u8(0x602F) > 0 ) or (bit.band(u8(0x6213), 0x03) >  0))  then return true else return false end end;
+	Crystal = 	function() if ((u8(0x6023) > 0 ) or (Band(u8(0x620A), 0x02) >  0))  then return true else return false end end;
+	Herb = 		function() if ((u8(0x6024) > 0 ) or (Band(u8(0x6205), 0x02) >  0))  then return true else return false end end;
+	TNT = 		function() if ((u8(0x6026) > 0 ) or (Band(u8(0x6208), 0x02) >  0))  then return true else return false end end;
+	Adamant = 	function() if ((u8(0x6027) > 0 ) or (Band(u8(0x6209), 0x02) >  0))  then return true else return false end end;
+	Slab = 		function() if ((u8(0x6028) > 0 ) or (Band(u8(0x620B), 0x02) >  0))  then return true else return false end end;
+	Ruby = 		function() if ((u8(0x6029) > 0 ) or (Band(u8(0x6214), 0x01) == 0))  then return true else return false end end;
+	Tail = 		function() if ((u8(0x602D) > 0 ) or (Band(u8(0x620E), 0x02) >  0))  then return true else return false end end;
+	Bottle = 	function() if ((u8(0x602F) > 0 ) or (Band(u8(0x6213), 0x03) >  0))  then return true else return false end end;
 	
-	SlabTranslation = function() return (bit.band(u8(0x620B), 0x02) > 0) end;
+	SlabTranslation = function() return (Band(u8(0x620B), 0x02) > 0) end;
 	EndGame = 		  function() return false end;
 };
 local giveItemFunctions = {
@@ -131,7 +142,7 @@ local giveItemFunctions = {
 	Tail=				function() w_u8(0x002D, 0x01) end;
 	Bottle=				function() w_u8(0x002F, 0x01) end;
 	Airship=			function() w_u8(0x0004, 0x01) end;
-	SlabTranslation= 	function() w_u8(0x020B, bit.bor(u8(0x020B), 0x02)) end;
+	SlabTranslation= 	function() w_u8(0x020B, Bor(u8(0x020B), 0x02)) end;
 	EarthOrb=			function() w_u8(0x0031, 0x01) end;
 	FireOrb=			function() w_u8(0x0032, 0x01) end;
 	WaterOrb=			function() w_u8(0x0033, 0x01) end;
@@ -229,16 +240,16 @@ local function updateKeyItemsTable(k)
 	if safeToRead() and u8(0x600C) == 0 then k["Canal"] = true  else k["Canal"] = false end;
 	
 	--complex items
-	if safeToRead() and ((u8(0x6023) > 0 ) or (bit.band(u8(0x620A), 0x02) >  0))  then k["Crystal"] = 	true else k["Crystal"] = 	false end;
-	if safeToRead() and ((u8(0x6024) > 0 ) or (bit.band(u8(0x6205), 0x02) >  0))  then k["Herb"] = 		true else k["Herb"] = 		false end;
-	if safeToRead() and ((u8(0x6026) > 0 ) or (bit.band(u8(0x6208), 0x02) >  0))  then k["TNT"] = 		true else k["TNT"] = 		false end;
-	if safeToRead() and ((u8(0x6027) > 0 ) or (bit.band(u8(0x6209), 0x02) >  0))  then k["Adamant"] = 	true else k["Adamant"] = 	false end;
-	if safeToRead() and ((u8(0x6028) > 0 ) or (bit.band(u8(0x620B), 0x02) >  0))  then k["Slab"] = 		true else k["Slab"] = 		false end;
-	if safeToRead() and ((u8(0x6029) > 0 ) or (bit.band(u8(0x6214), 0x01) == 0))  then k["Ruby"] = 		true else k["Ruby"] = 		false end;
-	if safeToRead() and ((u8(0x602D) > 0 ) or (bit.band(u8(0x620E), 0x02) >  0))  then k["Tail"] = 		true else k["Tail"] = 		false end;
-	if safeToRead() and ((u8(0x602F) > 0 ) or (bit.band(u8(0x6213), 0x03) >  0))  then k["Bottle"] = 	true else k["Bottle"] =		false end;
+	if safeToRead() and ((u8(0x6023) > 0 ) or (Band(u8(0x620A), 0x02) >  0))  then k["Crystal"] = 	true else k["Crystal"] = 	false end;
+	if safeToRead() and ((u8(0x6024) > 0 ) or (Band(u8(0x6205), 0x02) >  0))  then k["Herb"] = 		true else k["Herb"] = 		false end;
+	if safeToRead() and ((u8(0x6026) > 0 ) or (Band(u8(0x6208), 0x02) >  0))  then k["TNT"] = 		true else k["TNT"] = 		false end;
+	if safeToRead() and ((u8(0x6027) > 0 ) or (Band(u8(0x6209), 0x02) >  0))  then k["Adamant"] = 	true else k["Adamant"] = 	false end;
+	if safeToRead() and ((u8(0x6028) > 0 ) or (Band(u8(0x620B), 0x02) >  0))  then k["Slab"] = 		true else k["Slab"] = 		false end;
+	if safeToRead() and ((u8(0x6029) > 0 ) or (Band(u8(0x6214), 0x01) == 0))  then k["Ruby"] = 		true else k["Ruby"] = 		false end;
+	if safeToRead() and ((u8(0x602D) > 0 ) or (Band(u8(0x620E), 0x02) >  0))  then k["Tail"] = 		true else k["Tail"] = 		false end;
+	if safeToRead() and ((u8(0x602F) > 0 ) or (Band(u8(0x6213), 0x03) >  0))  then k["Bottle"] = 	true else k["Bottle"] =		false end;
 	
-	if safeToRead() and (bit.band(u8(0x620B), 0x02) > 0) then k["SlabTranslation"] = true else k["SlabTranslation"] = false end;
+	if safeToRead() and (Band(u8(0x620B), 0x02) > 0) then k["SlabTranslation"] = true else k["SlabTranslation"] = false end;
 	if IsChaosDead() or gamestate["chaosDefeatedRemotely"] then 
 		--gamestate.localChaosDefeated = true;
 		k["EndGame"] = true;
