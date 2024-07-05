@@ -1,4 +1,4 @@
-FFR Coop Mode v0.13
+FFR Coop Mode v0.13b
 
 Setup consists of two files:
     LibFFRNetwork.dll
@@ -27,6 +27,9 @@ Red = Error.
 Yellow = Yielding. This means the script is backing off to prevent lag.
 
 --==<[CHANGE LOG]>==--
+0.13b:
+	- Fixed incompatibility with newer versions of BizHawk (works with
+	  at least up to 2.9)
 0.13:
 	- Fixed crashing when server is down.
 	- Updated script to use new domain.
